@@ -8,7 +8,7 @@ const { APP_URL } = process.env;
 
 exports.getClass = async (req, res) => {
   const cond = req.query;
-  cond.limit = cond.limit || 12;
+  cond.limit = cond.limit || 3;
   cond.offset = cond.offset || 0;
   cond.page = cond.page || 1;
   cond.offset = (cond.page - 1) * cond.limit;
@@ -61,28 +61,32 @@ exports.addClass = (req, res) => {
 
 exports.updateClass = (req, res) => {
   const { id } = req.params;
-  classModel.getClassById(id, (err, results, _fields) => {
-    if (!err) {
-      if (results.length > 0) {
-        const data = req.body;
-        classModel.updateItem(data, id, (err, results, _fields) => {
-          if (!err) {
-            return formResponse(res, 200, `item with id ${id} updated successfully!`);
-          }
-          else {
-            console.error(err);
-            return formResponse(res, 500, 'An error occured');
-          }
-        });
+  itemImage(req, res, err => {
+    req.body.images = path.join(process.env.APP_UPLOAD_ROUTE, req.file.filename);
+    classModel.getClassById(id, (err, results, _fields) => {
+      if (!err) {
+        if (results.length > 0) {
+          const data = req.body;
+          classModel.updateClass(req.body, id, (err, results, _fields) => {
+            if (!err) {
+              return formResponse(res, 200, `item with id ${id} updated successfully!`);
+            }
+            else {
+              console.error(err);
+              return formResponse(res, 500, 'An error occured');
+            }
+          });
+        }
+        else {
+          return formResponse(res, 404, 'Item not found!');
+        }
       }
       else {
-        return formResponse(res, 404, 'Item not found!');
+        return formResponse(res, 400, `Error: ${err.sqlMassege}`);
       }
-    }
-    else {
-      return formResponse(res, 400, `Error: ${err.sqlMassege}`);
-    }
+    });
   });
+
 };
 
 exports.getDetailItem = (req, res) => {
@@ -106,3 +110,4 @@ exports.getDetailItem = (req, res) => {
     }
   });
 };
+

@@ -35,7 +35,7 @@ exports.login = async (req, res) => {
     const compare = await bycrpt.compare(password, user.password);
     if (user.role === 'admin') {
       if (compare) {
-        const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, APP_SECRET_KEY, { expiresIn: '1h' });
+        const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, APP_SECRET_KEY, { expiresIn: '5h' });
         return response(res, 200, 'Login Admin Success!', { token });
       } else {
         return response(res, 401, 'Wrong email or password!');

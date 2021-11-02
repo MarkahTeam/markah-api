@@ -6,7 +6,7 @@ const admin = require('../middleware/checkToken');
 classRouter.get('/', classController.getClass);
 classRouter.post('/', classController.addClass);
 classRouter.get('/:id', classController.getDetailItem);
-classRouter.patch('/:id', admin, classController.updateClass);
+classRouter.put('/:id', admin, classController.updateClass);
 
 
 module.exports = classRouter;

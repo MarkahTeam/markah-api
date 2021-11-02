@@ -13,7 +13,7 @@ const auth = (req, res, next) => {
         if (req.authUser.role === 'admin') {
           next();
         } else {
-          return formResponse(res, 400, 'Sorry you are just as customer!');
+          return formResponse(res, 400, 'Sorry you are just as Writer!');
         }
       } catch (err) {
         return formResponse(res, 401, 'Session expired, please login!');

@@ -18,3 +18,7 @@ exports.updateArticles = (data, id, cb) => {
 exports.deleteArticles = (id, cb) => {
   db.query(`DELETE FROM ${table} WHERE id=?`, [id], cb);
 };
+
+exports.getProductCount = () => {
+  return execPromise(`select count(${table}.id) as count_item from ${table}`);
+};
