@@ -99,7 +99,18 @@ exports.getDetailItem = (req, res) => {
         if (item.images !== null && !item.images.startsWith('http')) {
           item.images = `${APP_URL}${item.images}`;
         }
-        return formResponse(res, 200, 'Detail Item', results);
+        const data = {
+          id: '',
+          images: '',
+          name: '',
+          description: '',
+          detail: '',
+          price: '',
+          created_at: '',
+          updated_at: '',
+          ...results[0]
+        };
+        return formResponse(res, 200, 'Detail Item', data);
       }
       else {
         return formResponse(res, 404, 'Item not Found!');
