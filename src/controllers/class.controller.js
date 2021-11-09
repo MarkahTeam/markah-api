@@ -38,24 +38,22 @@ exports.getClass = async (req, res) => {
 
 exports.addClass = (req, res) => {
   itemImage(req, res, err => {
-    validateInteger(res, req.body.price, 'Price', () => {
-      req.body.images = path.join(process.env.APP_UPLOAD_ROUTE, req.file.filename);
-      try {
-        classModel.addClass(req.body, (err, results, _fields) => {
-          if (!err) {
-            if (results.affectedRows > 0) {
-              return formResponse(res, 200, 'Create item has been successfully!');
-            } else {
-              return formResponse(res, 500, 'An error occured');
-            }
+    req.body.images = path.join(process.env.APP_UPLOAD_ROUTE, req.file.filename);
+    try {
+      classModel.addClass(req.body, (err, results, _fields) => {
+        if (!err) {
+          if (results.affectedRows > 0) {
+            return formResponse(res, 200, 'Create item has been successfully!');
           } else {
-            return formResponse(res, 400, `Error: ${err.sqlMassege}`);
+            return formResponse(res, 500, 'An error occured');
           }
-        });
-      } catch (error) {
-        return formResponse(res, 400, `Error: ${error.sqlMassege}`, error);
-      }
-    });
+        } else {
+          return formResponse(res, 400, `Error: ${err}`);
+        }
+      });
+    } catch (error) {
+      return formResponse(res, 500, `Error: ${error.sqlMassege}`, error);
+    }
   });
 };
 

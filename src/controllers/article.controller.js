@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 const articleModel = require('../models/article.model');
+const { getUserById } = require('../models/users.model');
 const { response: formResponse } = require('../helpers/formResponse');
-const { validateInteger } = require('../helpers/validation');
 const itemImage = require('../helpers/upload');
 const path = require('path');
 const { APP_URL } = process.env;
@@ -12,7 +12,7 @@ exports.getArticles = async (req, res) => {
   cond.offset = cond.offset || 0;
   cond.page = cond.page || 1;
   cond.offset = (cond.page - 1) * cond.limit;
-  const results = await articleModel.getClasses(cond);
+  const results = await articleModel.getArticles(cond);
   const countResult = await articleModel.getProductCount();
   const pageInfo = {};
   try {
@@ -37,50 +37,107 @@ exports.getArticles = async (req, res) => {
 };
 
 exports.addArticle = (req, res) => {
+  const idUser = req.authUser.id;
   itemImage(req, res, err => {
-    validateInteger(res, req.body.price, 'Price', () => {
+    getUserById(idUser, (err, results) => {
       req.body.images = path.join(process.env.APP_UPLOAD_ROUTE, req.file.filename);
-      try {
-        articleModel.addClass(req.body, (err, results, _fields) => {
-          if (!err) {
-            if (results.affectedRows > 0) {
-              return formResponse(res, 200, 'Create article has been successfully!');
+      const data = {
+        id_user: idUser,
+        name: req.body.name,
+        images: req.body.images,
+        description: req.body.description,
+        detail: req.body.detail
+      };
+      if (!err) {
+        try {
+          articleModel.addArticles(data, (err, results, _fields) => {
+            if (!err) {
+              if (results.affectedRows > 0) {
+                return formResponse(res, 200, 'Create article has been successfully!');
+              } else {
+                return formResponse(res, 500, 'An error occured');
+              }
             } else {
-              return formResponse(res, 500, 'An error occured');
+              return formResponse(res, 400, `Error: ${err}`);
             }
-          } else {
-            return formResponse(res, 400, `Error: ${err.sqlMassege}`);
-          }
-        });
-      } catch (error) {
-        return formResponse(res, 400, `Error: ${error.sqlMassege}`, error);
+          });
+        } catch (error) {
+          return formResponse(res, 400, `Error: ${error}`);
+        }
+      } else {
+        console.log(err);
       }
     });
   });
 };
 
-exports.updateArticle = (req, res) => {
-  const { id } = req.params;
-  articleModel.getClassById(id, (err, results, _fields) => {
+exports.getDetailArticle = (req, res) => {
+  const { id: stringId } = req.params;
+  const id = parseInt(stringId);
+  articleModel.getArticleById(id, (err, results, _fields) => {
     if (!err) {
       if (results.length > 0) {
-        const data = req.body;
-        articleModel.updateItem(data, id, (err, results, _fields) => {
-          if (!err) {
-            return formResponse(res, 200, `article with id ${id} updated successfully!`);
-          }
-          else {
-            console.error(err);
-            return formResponse(res, 500, 'An error occured');
-          }
-        });
+        const item = results[0];
+        if (item.images !== null && !item.images.startsWith('http')) {
+          item.images = `${APP_URL}${item.images}`;
+        }
+        const data = {
+          id: '',
+          images: '',
+          name: '',
+          description: '',
+          detail: '',
+          id_user: '',
+          username: '',
+          created_at: '',
+          updated_at: '',
+          ...results[0]
+        };
+        return formResponse(res, 200, 'Detail Article', data);
       }
       else {
-        return formResponse(res, 404, 'Article not found!');
+        return formResponse(res, 404, 'Article not Found!');
       }
     }
     else {
-      return formResponse(res, 400, `Error: ${err.sqlMassege}`);
+      return formResponse(res, 400, `${err.sqlMassege}`);
     }
   });
+};
+
+exports.updateArticle = (req, res) => {
+  const { id } = req.params;
+  const idUser = req.authUser.id;
+  itemImage(req, res, err => {
+    articleModel.getArticleById(id, (err, results, _fields) => {
+      req.body.images = path.join(process.env.APP_UPLOAD_ROUTE, req.file.filename);
+      const data = {
+        id_user: idUser,
+        name: req.body.name,
+        images: req.body.images,
+        description: req.body.description,
+        detail: req.body.detail
+      };
+      if (!err) {
+        if (results.length > 0) {
+          articleModel.updateArticles(data, id, (err, results, _fields) => {
+            if (!err) {
+              return formResponse(res, 200, `Article with id ${id} updated successfully!`);
+            }
+            else {
+              console.error(err);
+              return formResponse(res, 500, 'An error occured');
+            }
+          });
+        }
+        else {
+          return formResponse(res, 404, 'Article not found!');
+        }
+      }
+      else {
+        return formResponse(res, 400, `${err.sqlMassege}`);
+      }
+    });
+  });
+
 };

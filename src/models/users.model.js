@@ -11,3 +11,9 @@ exports.createUser = (data) => {
 exports.getUserByEmail = (email) => {
   return execPromise(`Select id, email, password, role from ${table} where email = ?`, email);
 };
+
+exports.getUserById = (id, cb) => {
+  db.query(`
+    SELECT id, role, name, email FROM users WHERE id = ?
+    `, [id], cb);
+};
