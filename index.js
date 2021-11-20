@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 
 const app = express();
-const port = process.env.PORT || '8888';
+const port = process.env.PORT || '31422';
 const mainRouter = require('./src/routes/index');
 const server = require('http').createServer(app);
 // const whiteList = ['http://localhost:3000', 'http://localhost:8888'];
